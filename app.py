@@ -5,6 +5,7 @@ from datetime import datetime
 import json
 import platform
 import humanize
+import sys
 
 # class for modeling file data
 
@@ -48,6 +49,39 @@ def hashing(pathToFile):
     # return hash as a string in hexidecimal format
     return sha256.hexdigest()
 
+# function for getting metadata for files and instantiating the objects
+
+
+def getInfo(pathList, fileList):
+    # get file info here given a list of paths
+
+    for filePath in pathList:
+
+        # call hashing function on each file
+        sha256Hash = hashing(filePath)
+
+        # get metadata
+        # get file size and make it human readable
+        fileSize = humanize.naturalsize(os.path.getsize(filePath))
+
+        # get modification time and creation time for the current file
+        modTimeStamp = os.path.getmtime(filePath)
+        modTime = datetime.fromtimestamp(
+            modTimeStamp).strftime('%Y-%m-%d--%H-%M-%S')
+        createTimeStamp = os.path.getctime(filePath)
+        createTime = datetime.fromtimestamp(
+            createTimeStamp).strftime('%Y-%m-%d--%H-%M-%S')
+
+        isDuplicate = False
+        duplicateOf = []
+        # instantiate model object and add data
+        fd = FileData(filePath, sha256Hash, fileSize, modTime,
+                      createTime, isDuplicate, duplicateOf)
+
+        # append the object to the list
+        fileList.append(fd)
+    return fileList
+
 
 # comparison function for finding duplicates between hashes
 def dupeFinder(fileList):
@@ -71,7 +105,7 @@ def dupeFinder(fileList):
 
     # check if dupeList is empty
     if not dupeList:
-        print("*********************No duplicate files found!*********************")
+        print("********************* No duplicate files found *********************")
     else:
         # create file name with current datetime
         outputFileName = "duplicates_" + str(datetime.now()) + ".json"
@@ -82,12 +116,26 @@ def dupeFinder(fileList):
         with open(outputFileName, "w") as outfile:
             outfile.write(json_string)
         outfile.close()
-        print("*********************Duplicates found! Duplicates written to json file*********************")
+        print("********************* Duplicates found. Duplicates written to json file *********************")
     return dupeList
+
+
+# writes metadata to a json file
+def writeMetadata(fileList):
+    # write metadata to file
+    mdFileName = "metadata_" + str(datetime.now()) + ".json"
+
+    # convert objects to json string
+    json_string = json.dumps([x.__dict__ for x in fileList], indent=4)
+    # write the json string to json file
+    with open(mdFileName, "w") as outfile:
+        outfile.write(json_string)
+    outfile.close()
 
 
 def main():
     fileList = []
+    pathList = []
     # find out which system, release, and version is being used
     print("System: " + str(platform.system()))
     print("Release: " + str(platform.release()))
@@ -95,110 +143,40 @@ def main():
 
     userInput = input("Please provide a path or folder: ")
     if os.path.isdir(userInput):
-        print("*********************User provided directory*********************")
+        print("********************* User provided directory path *********************")
         # create list for containing file objects
         for (root, dirs, files) in os.walk(userInput, topdown=True):
 
             for file in files:
                 # get absolute path using user input
                 absPath = os.path.join(root, file)
+                pathList.append(absPath)
 
-                # call hashing function on each file
-                sha256Hash = hashing(absPath)
-
-                # get metadata
-                # get file size and make it human readable
-                fileSize = humanize.naturalsize(os.path.getsize(absPath))
-
-                # get modification time and creation time for the current file
-                modTimeStamp = os.path.getmtime(absPath)
-                modTime = datetime.fromtimestamp(
-                    modTimeStamp).strftime('%Y-%m-%d--%H-%M-%S')
-                createTimeStamp = os.path.getctime(absPath)
-                createTime = datetime.fromtimestamp(
-                    createTimeStamp).strftime('%Y-%m-%d--%H-%M-%S')
-
-                isDuplicate = False
-                duplicateOf = []
-                # instantiate model object and add data
-                fd = FileData(absPath, sha256Hash, fileSize, modTime,
-                              createTime, isDuplicate, duplicateOf)
-
-                # append the object to the list
-                fileList.append(fd)
-        dupeFinder(fileList)
-
-        # write metadata to file
-        mdFileName = "metadata_" + str(datetime.now()) + ".json"
-
-        # convert objects to json string
-        json_string = json.dumps([x.__dict__ for x in fileList], indent=4)
-        # write the json string to json file
-        with open(mdFileName, "w") as outfile:
-            outfile.write(json_string)
-        outfile.close()
-        for x in fileList:
-            print(repr(x))
-
+    # if a file path is provided by user, get a second file path
     elif os.path.isfile(userInput):
-        print("*********************User provided file*********************")
-        # if a path to a file is provided, prompt for a second path
-        userInput2 = input("Please provide a second path: ")
+        print("********************* User provided file path *********************")
+        # save both file paths to pathList
+        pathList.append(userInput)
+        userInput2 = input("Please provide a second file path: ")
         if os.path.isfile(userInput2):
-            # get hashes for both files
-            sha256Hash1 = hashing(userInput)
-            sha256Hash2 = hashing(userInput2)
-
-            # get metadata
-            fileSize1 = humanize.naturalsize(os.path.getsize(userInput))
-            fileSize2 = humanize.naturalsize(os.path.getsize(userInput2))
-
-            modTime1 = os.path.getmtime(userInput)
-            modTime2 = os.path.getmtime(userInput2)
-
-            # get modification and creation time for file 1
-            modTimeStamp1 = os.path.getmtime(userInput)
-            modTime1 = datetime.fromtimestamp(
-                modTimeStamp1).strftime('%Y-%m-%d--%H-%M-%S')
-            createTimeStamp1 = os.path.getctime(userInput)
-            createTime1 = datetime.fromtimestamp(
-                createTimeStamp1).strftime('%Y-%m-%d--%H-%M-%S')
-
-            # get modification and creation time for file 2
-            modTimeStamp2 = os.path.getmtime(userInput2)
-            modTime2 = datetime.fromtimestamp(
-                modTimeStamp2).strftime('%Y-%m-%d--%H-%M-%S')
-            createTimeStamp2 = os.path.getctime(userInput2)
-            createTime2 = datetime.fromtimestamp(
-                createTimeStamp2).strftime('%Y-%m-%d--%H-%M-%S')
-
-            isDuplicate = False
-            duplicateOf = []
-            # instantiate objects and append to list
-            fd = FileData(userInput, sha256Hash1, fileSize1, modTime1,
-                          createTime1, isDuplicate, duplicateOf)
-            fileList.append(fd)
-            fd = FileData(userInput2, sha256Hash2, fileSize2, modTime2,
-                          createTime2, isDuplicate, duplicateOf)
-            fileList.append(fd)
-
-            # call comparison function
-            dupeFinder(fileList)
-            # write metadata to file
-            mdFileName = "metadata_" + str(datetime.now()) + ".json"
-
-            # convert objects to json string
-            json_string = json.dumps([x.__dict__ for x in fileList], indent=4)
-            # write the json string to json file
-            with open(mdFileName, "w") as outfile:
-                outfile.write(json_string)
-            outfile.close()
+            pathList.append(userInput2)
 
         else:
-            print("*********************Not a file or a directory*********************")
+            print("********************* Not a file or a directory *********************")
+            sys.exit()
 
     else:
-        print("*********************Not a file or a directory*********************")
+        print("********************* Not a file or a directory *********************")
+        sys.exit()
+
+    # calls getInfo to get metadata for files and use that information to create model objects
+    getInfo(pathList, fileList)
+
+    # calls dupeFinder to search for duplicate files and save duplicates to a file
+    dupeFinder(fileList)
+
+    # calls writeMetadata to output file metadata to a json file
+    writeMetadata(fileList)
 
 
 if __name__ == "__main__":
