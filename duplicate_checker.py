@@ -107,8 +107,15 @@ def dupeFinder(fileList):
     if not dupeList:
         print("********************* No duplicate files found *********************")
     else:
+
+        # clean up datetime string to remove spaces and colons
+        currentTime = str(datetime.now())
+        currentTime = currentTime.replace(" ", "--")
+        currentTime = currentTime.replace(":", "-")
+
         # create file name with current datetime
-        outputFileName = "duplicates_" + str(datetime.now()) + ".json"
+        # outputFileName = "duplicates_" + str(datetime.now()) + ".json"
+        outputFileName = "duplicates_" + currentTime + ".json"
 
         # convert objects to json string
         json_string = json.dumps([x.__dict__ for x in dupeList], indent=4)
@@ -122,8 +129,13 @@ def dupeFinder(fileList):
 
 # writes metadata to a json file
 def writeMetadata(fileList):
-    # write metadata to file
-    mdFileName = "metadata_" + str(datetime.now()) + ".json"
+    # clean up datetime string to remove spaces and colons
+    currentTime = str(datetime.now())
+    currentTime = currentTime.replace(" ", "--")
+    currentTime = currentTime.replace(":", "-")
+
+    mdFileName = "metadata_" + currentTime + ".json"
+    # mdFileName = "metadata_" + str(datetime.now()) + ".json"
 
     # convert objects to json string
     json_string = json.dumps([x.__dict__ for x in fileList], indent=4)
