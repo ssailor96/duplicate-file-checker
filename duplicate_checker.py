@@ -103,46 +103,35 @@ def dupeFinder(fileList):
                 if y not in dupeList:
                     dupeList.append(y)
 
-    # check if dupeList is empty
-    if not dupeList:
-        print("********************* No duplicate files found *********************")
-    else:
-
-        # clean up datetime string to remove spaces and colons
-        currentTime = str(datetime.now())
-        currentTime = currentTime.replace(" ", "--")
-        currentTime = currentTime.replace(":", "-")
-
-        # create file name with current datetime
-        # outputFileName = "duplicates_" + str(datetime.now()) + ".json"
-        outputFileName = "duplicates_" + currentTime + ".json"
-
-        # convert objects to json string
-        json_string = json.dumps([x.__dict__ for x in dupeList], indent=4)
-        # write the json string to json file
-        with open(outputFileName, "w") as outfile:
-            outfile.write(json_string)
-        outfile.close()
-        print("********************* Duplicates found. Duplicates written to json file *********************")
-    return dupeList
-
-
-# writes metadata to a json file
-def writeMetadata(fileList):
     # clean up datetime string to remove spaces and colons
     currentTime = str(datetime.now())
     currentTime = currentTime.replace(" ", "--")
     currentTime = currentTime.replace(":", "-")
 
-    mdFileName = "metadata_" + currentTime + ".json"
-    # mdFileName = "metadata_" + str(datetime.now()) + ".json"
+    # create file name with current datetime
+    outputFileName = "metadata_" + currentTime + ".json"
 
     # convert objects to json string
     json_string = json.dumps([x.__dict__ for x in fileList], indent=4)
     # write the json string to json file
-    with open(mdFileName, "w") as outfile:
+    with open(outputFileName, "w") as outfile:
         outfile.write(json_string)
     outfile.close()
+
+    # check if dupeList is empty
+    if not dupeList:
+        print("********************* No duplicate files found *********************")
+    else:
+        print("********************* Duplicate files found! Duplicates listed below *********************")
+        # print all duplicates to console along with the number of duplicates
+        numDuplicates = 0
+        for x in fileList:
+            if x.isDuplicate == True:
+                numDuplicates = numDuplicates + 1
+                print(x.absPath)
+        print("Number of duplicate files found: " + str(numDuplicates))
+        print("********************* See metadata file for more information *********************")
+    return dupeList
 
 
 def main():
@@ -186,9 +175,6 @@ def main():
 
     # calls dupeFinder to search for duplicate files and save duplicates to a file
     dupeFinder(fileList)
-
-    # calls writeMetadata to output file metadata to a json file
-    writeMetadata(fileList)
 
 
 if __name__ == "__main__":

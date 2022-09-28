@@ -1,0 +1,130 @@
+[
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/.DS_Store",
+        "sha256Hash": "e30abbf7fd7035e39c4819d590a534ed007a7add768d629ac03e9d3bfcd5d9d9",
+        "fileSize": "6.1 kB",
+        "modTime": "2022-09-21--15-02-29",
+        "createTime": "2022-09-21--15-02-29",
+        "isDuplicate": false,
+        "duplicateOf": []
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/testFile.txt",
+        "sha256Hash": "2d8c2f6d978ca21712b5f6de36c9d31fa8e96a4fa5d8ff8b0188dfb9e7c171bb",
+        "fileSize": "445 Bytes",
+        "modTime": "2022-09-07--13-29-52",
+        "createTime": "2022-09-14--13-33-52",
+        "isDuplicate": true,
+        "duplicateOf": [
+            "/Users/sarahwhite/Desktop/testFolder/testFile2.txt",
+            "/Users/sarahwhite/Desktop/testFolder/subFolder/testFile5.txt",
+            "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling2/testFile6.txt"
+        ]
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/testFile2.txt",
+        "sha256Hash": "2d8c2f6d978ca21712b5f6de36c9d31fa8e96a4fa5d8ff8b0188dfb9e7c171bb",
+        "fileSize": "445 Bytes",
+        "modTime": "2022-09-07--13-29-48",
+        "createTime": "2022-09-15--13-54-43",
+        "isDuplicate": true,
+        "duplicateOf": [
+            "/Users/sarahwhite/Desktop/testFolder/testFile.txt",
+            "/Users/sarahwhite/Desktop/testFolder/subFolder/testFile5.txt",
+            "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling2/testFile6.txt"
+        ]
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/testFile3.txt",
+        "sha256Hash": "61f3f9bccb0e4426f8b5419175c48f0c9d800ff8fe04b170bda53d1578706b4a",
+        "fileSize": "970 Bytes",
+        "modTime": "2022-09-07--13-30-23",
+        "createTime": "2022-09-15--13-54-41",
+        "isDuplicate": true,
+        "duplicateOf": [
+            "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling1/testFile7.txt"
+        ]
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/subFolder/.DS_Store",
+        "sha256Hash": "959a6c20b8f71196f5a63d6e12e7232509d1aea4bc4b9042d6defe8458416960",
+        "fileSize": "6.1 kB",
+        "modTime": "2022-09-21--15-02-29",
+        "createTime": "2022-09-21--15-02-29",
+        "isDuplicate": false,
+        "duplicateOf": []
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/subFolder/testFile4.txt",
+        "sha256Hash": "8d1ff39b5fdab85400165352a8dbbd2e6f57fb27d9fd1b52f8242e9125d9d7d3",
+        "fileSize": "34 Bytes",
+        "modTime": "2022-09-09--17-03-04",
+        "createTime": "2022-09-09--17-03-04",
+        "isDuplicate": false,
+        "duplicateOf": []
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/subFolder/testFile5.txt",
+        "sha256Hash": "2d8c2f6d978ca21712b5f6de36c9d31fa8e96a4fa5d8ff8b0188dfb9e7c171bb",
+        "fileSize": "445 Bytes",
+        "modTime": "2022-09-07--13-29-52",
+        "createTime": "2022-09-14--13-34-16",
+        "isDuplicate": true,
+        "duplicateOf": [
+            "/Users/sarahwhite/Desktop/testFolder/testFile.txt",
+            "/Users/sarahwhite/Desktop/testFolder/testFile2.txt",
+            "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling2/testFile6.txt"
+        ]
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling2/.DS_Store",
+        "sha256Hash": "e9a861f1c69cfebfb3cf118563103f29666e76e01385967b0b3c5742aa7d37a6",
+        "fileSize": "6.1 kB",
+        "modTime": "2022-09-14--13-45-42",
+        "createTime": "2022-09-14--13-45-42",
+        "isDuplicate": false,
+        "duplicateOf": []
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling2/testFile8.txt",
+        "sha256Hash": "52fba30d1a60e6baf8c28571ad3c4c159c0455607f387fb2fa724707ed8d0f9a",
+        "fileSize": "19 Bytes",
+        "modTime": "2022-09-21--15-02-54",
+        "createTime": "2022-09-21--15-02-54",
+        "isDuplicate": false,
+        "duplicateOf": []
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling2/testFile6.txt",
+        "sha256Hash": "2d8c2f6d978ca21712b5f6de36c9d31fa8e96a4fa5d8ff8b0188dfb9e7c171bb",
+        "fileSize": "445 Bytes",
+        "modTime": "2022-09-07--13-29-52",
+        "createTime": "2022-09-14--13-34-24",
+        "isDuplicate": true,
+        "duplicateOf": [
+            "/Users/sarahwhite/Desktop/testFolder/testFile.txt",
+            "/Users/sarahwhite/Desktop/testFolder/testFile2.txt",
+            "/Users/sarahwhite/Desktop/testFolder/subFolder/testFile5.txt"
+        ]
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling1/.DS_Store",
+        "sha256Hash": "4c910d7dcf19683fd289ea5df0e45df44e199870d0298cc373a0427a1a2166ea",
+        "fileSize": "6.1 kB",
+        "modTime": "2022-09-15--14-00-01",
+        "createTime": "2022-09-15--14-00-01",
+        "isDuplicate": false,
+        "duplicateOf": []
+    },
+    {
+        "absPath": "/Users/sarahwhite/Desktop/testFolder/subFolder/sibling1/testFile7.txt",
+        "sha256Hash": "61f3f9bccb0e4426f8b5419175c48f0c9d800ff8fe04b170bda53d1578706b4a",
+        "fileSize": "970 Bytes",
+        "modTime": "2022-09-07--13-30-23",
+        "createTime": "2022-09-15--13-55-01",
+        "isDuplicate": true,
+        "duplicateOf": [
+            "/Users/sarahwhite/Desktop/testFolder/testFile3.txt"
+        ]
+    }
+]
