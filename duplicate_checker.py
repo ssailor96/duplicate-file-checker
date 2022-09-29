@@ -103,13 +103,12 @@ def dupeFinder(fileList):
                 if y not in dupeList:
                     dupeList.append(y)
 
-    # clean up datetime string to remove spaces and colons
-    currentTime = str(datetime.now())
-    currentTime = currentTime.replace(" ", "--")
-    currentTime = currentTime.replace(":", "-")
+    # get current datetime and format as string
+    currentTime = datetime.now()
+    currentTime = currentTime.strftime('%Y-%m-%dT%H-%M-%S')
 
     # create file name with current datetime
-    outputFileName = "metadata_" + currentTime + ".json"
+    outputFileName = "hash_report-" + currentTime + ".json"
 
     # convert objects to json string
     json_string = json.dumps([x.__dict__ for x in fileList], indent=4)
@@ -130,7 +129,7 @@ def dupeFinder(fileList):
                 numDuplicates = numDuplicates + 1
                 print(x.absPath)
         print("Number of duplicate files found: " + str(numDuplicates))
-        print("********************* See metadata file for more information *********************")
+        print("********************* See hash report file for more information *********************")
     return dupeList
 
 
