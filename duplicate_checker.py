@@ -12,16 +12,16 @@ import sys
 
 class FileData:
     def __init__(self, abs_path, sha256_hash, file_size, mod_time, create_time, is_duplicate, duplicate_of):
-        self.abs_path = abs_path
-        self.sha256_hash = sha256_hash
-        self.file_size = file_size
-        self.mod_time = mod_time
-        self.create_time = create_time
-        self.is_duplicate = is_duplicate
-        self.duplicate_of = duplicate_of
+        self.absPath = abs_path
+        self.sha256Hash = sha256_hash
+        self.fileSize = file_size
+        self.modTime = mod_time
+        self.createTime = create_time
+        self.isDuplicate = is_duplicate
+        self.duplicateOf = duplicate_of
 
     def __repr__(self):
-        return f'Absolute path: {self.abs_path} \nFile hash: {self.sha256_hash} \nFile size: {self.file_size} \nFile modified at: {self.mod_time} \nFile created at: {self.create_time} \nDuplicate file: {self.is_duplicate} \nDuplicate of: {self.duplicate_of}'
+        return f'Absolute path: {self.absPath} \nFile hash: {self.sha256Hash} \nFile size: {self.fileSize} \nFile modified at: {self.modTime} \nFile created at: {self.createTime} \nDuplicate file: {self.isDuplicate} \nDuplicate of: {self.duplicateOf}'
 
 
 # hashing function
@@ -66,10 +66,10 @@ def get_info(path_list, file_list):
 
         # get modification time and creation time for the current file
         mod_time = datetime.fromtimestamp(
-            os.path.getmtime(file_path)).isoformat()
+            os.path.getmtime(file_path)).astimezone().isoformat()
 
         create_time = datetime.fromtimestamp(
-            os.path.getctime(file_path)).isoformat()
+            os.path.getctime(file_path)).astimezone().isoformat()
 
         is_duplicate = False
         duplicate_of = []
@@ -88,13 +88,13 @@ def dupe_finder(file_list):
     # check each object in list exactly once
     for i, x in enumerate(file_list):
         for y in file_list[i + 1:]:
-            if x.sha256_hash == y.sha256_hash:
+            if x.sha256Hash == y.sha256Hash:
 
                 # update duplicate info
-                x.is_duplicate = True
-                x.duplicate_of.append(y.abs_path)
-                y.is_duplicate = True
-                y.duplicate_of.append(x.abs_path)
+                x.isDuplicate = True
+                x.duplicateOf.append(y.absPath)
+                y.isDuplicate = True
+                y.duplicateOf.append(x.absPath)
 
                 # append duplicates to dupe_list
                 if x not in dupe_list:
@@ -123,9 +123,9 @@ def dupe_finder(file_list):
         # print all duplicates to console along with the number of duplicates
         num_duplicates = 0
         for x in file_list:
-            if x.is_duplicate == True:
+            if x.isDuplicate == True:
                 num_duplicates = num_duplicates + 1
-                print(x.abs_path)
+                print(x.absPath)
         print("Number of duplicate files found: " + str(num_duplicates))
         print("********************* See hash report file for more information *********************")
     return dupe_list
