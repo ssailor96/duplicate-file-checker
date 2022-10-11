@@ -30,7 +30,7 @@ def delete_files(deletion_list):
     for file in deletion_list:
         os.remove(file)
         print(file + " deleted!")
-    sys.exit()
+    return
 
 
 # hashing function
@@ -112,16 +112,13 @@ def dupe_finder(file_list):
                 if y not in dupe_list:
                     dupe_list.append(y)
 
-    # for x in file_list:
-    #     print(repr(x))
-
     # print list of duplicate files
     for file in file_list:
         # if the file isn't a duplicate set delete flag to False
         if file.isDuplicate == False:
             file.deleteFlag = False
 
-        if file.isDuplicate == True and file.deleteFlag == None:
+        if (file.isDuplicate == True) and (file.deleteFlag == None):
             # if the file is a duplicate and the delete flag is set to none prompt user to choose whether or not to delete files
             print("The following files are duplicates of each other: ")
 
@@ -147,7 +144,30 @@ def dupe_finder(file_list):
                 #       with the associated delete numbers
                 for j in delete_selection:
                     deletion_list.append(output_dupes[int(j)-1])
+
+                # for f in file_list:
+                #     if f.absPath not in deletion_list:
+                #         f.deleteFlag = False
+
+                # NEED LIST OF FILES IN OUTPUT DUPES THAT AREN'T IN DELETION LIST
+                flag_list = [x for x in output_dupes if x not in deletion_list]
+                for f in file_list:
+                    for g in flag_list:
+                        if f.absPath == g:
+                            f.deleteFlag = False
+
                 # call file deletion function, passing in deletion_list
+                for a in deletion_list:
+                    for b in file_list:
+                        if a == b.absPath:
+                            b.deleteFlag = True
+                            for f in file_list:
+                                for g in f.duplicateOf:
+                                    if g == b.absPath:
+                                        f.duplicateOf.remove(g)
+
+                # for x in file_list:
+                #     print(repr(x))
                 delete_files(deletion_list)
 
             elif user_input == "0":
@@ -162,19 +182,6 @@ def dupe_finder(file_list):
                 print("Improper input")
                 sys.exit()
 
-    # # make main stop here?
-    # current_time = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-
-    # # create file name with current datetime
-    # output_file_name = "hash_report-" + current_time + ".json"
-
-    # # convert objects to json string
-    # json_string = json.dumps([x.__dict__ for x in file_list], indent=4)
-    # # write the json string to json file
-    # with open(output_file_name, "w") as outfile:
-    #     outfile.write(json_string)
-    # outfile.close()
-
     # check if dupe_list is empty
     if not dupe_list:
         print("********************* No duplicate files found *********************")
@@ -188,18 +195,19 @@ def dupe_finder(file_list):
                 print(x.absPath)
         print("Number of duplicate files found: " + str(num_duplicates))
         print("********************* See hash report file for more information *********************")
+
     return dupe_list
 
 
 def output_data(file_list):
-        # make main stop here?
     current_time = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 
     # create file name with current datetime
     output_file_name = "hash_report-" + current_time + ".json"
 
     # convert objects to json string
-    json_string = json.dumps([x.__dict__ for x in file_list], indent=4)
+    json_string = json.dumps(
+        [x.__dict__ for x in file_list if x.deleteFlag == False], indent=4)
     # write the json string to json file
     with open(output_file_name, "w") as outfile:
         outfile.write(json_string)
@@ -214,7 +222,6 @@ def main():
     file_list = []
     path_list = []
     # find out which system, release, and version is being used
-
     user_input = input("Please provide a path or folder: ")
     # file_walk(user_input, file_list, path_list)
 
@@ -223,7 +230,6 @@ def main():
             "********************* User provided directory path *********************")
         # create list for containing file objects
         for (root, dirs, files) in os.walk(user_input, topdown=True):
-
             for file in files:
                 # get absolute path using user input
                 abs_path = os.path.join(root, file)
@@ -237,12 +243,10 @@ def main():
         user_input2 = input("Please provide a second file path: ")
         if os.path.isfile(user_input2):
             path_list.append(user_input2)
-
         else:
             print(
                 "********************* Not a file or a directory *********************")
             sys.exit()
-
     else:
         print("********************* Not a file or a directory *********************")
         sys.exit()
