@@ -130,9 +130,25 @@ def dupe_finder(file_list):
                 print("(" + str(i) + ") " + dupe)
                 i += 1
 
-            # prompt user to choose which files to delete if any
-            user_input = input(
-                "Enter '0' to keep all files. Otherwise, enter the numbers listed next to each file you would like to delete, separated by spaces.\n")
+            # input only correct if int between 0-i
+            # get input from user and check if it is a path to a file or folder
+            while(True):
+                # prompt user to choose which files to delete if any
+                user_input = input(
+                    "Enter '0' to keep all files. Otherwise, enter the numbers listed next to each file you would like to delete, separated by spaces.\n")
+
+                # if input is correct, exit loop
+                # if type(user_input) == int:
+                if user_input.isdigit():
+                    break
+                # if input is incorrect, loop again to reprompt user for correct input
+                else:
+                    print("Incorrect input")
+                    continue
+
+            # # prompt user to choose which files to delete if any
+            # user_input = input(
+            #     "Enter '0' to keep all files. Otherwise, enter the numbers listed next to each file you would like to delete, separated by spaces.\n")
 
             if user_input != "0":
                 deletion_list = []
@@ -225,7 +241,17 @@ def main():
 
     file_list = []
     path_list = []
-    user_input = input("Please provide a path or folder: ")
+
+    # get input from user and check if it is a path to a file or folder
+    while(True):
+        user_input = input("Please provide a path to a file or folder: ")
+        # if input is correct, exit loop
+        if os.path.isfile(user_input) or os.path.isdir(user_input):
+            break
+        # if input is incorrect, loop again to reprompt user for correct input
+        else:
+            print("Incorrect input")
+            continue
 
     if os.path.isdir(user_input):
         print(
@@ -242,16 +268,17 @@ def main():
         print("********************* User provided file path *********************")
         # save both file paths to path_list
         path_list.append(user_input)
-        user_input2 = input("Please provide a second file path: ")
-        if os.path.isfile(user_input2):
-            path_list.append(user_input2)
-        else:
-            print(
-                "********************* Not a file or a directory *********************")
-            sys.exit()
-    else:
-        print("********************* Not a file or a directory *********************")
-        sys.exit()
+        # prompt user for second file path and make sure input is correct
+        while(True):
+            user_input2 = input("Please provide a second file path: ")
+            # if input is correct, exit loop
+            if os.path.isfile(user_input2):
+                path_list.append(user_input2)
+                break
+            # if input is incorrect, loop again to reprompt user for correct input
+            else:
+                print("Incorrect input")
+                continue
 
     # calls get_info to get metadata for files and use that information to create model objects
     get_info(path_list, file_list)
