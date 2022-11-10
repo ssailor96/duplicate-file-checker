@@ -130,31 +130,35 @@ def dupe_finder(file_list):
                 print("(" + str(i) + ") " + dupe)
                 i += 1
 
-            # input only correct if int between 0-i
-            # get input from user and check if it is a path to a file or folder
-            while(True):
+            # flag for determining whether output request should continue
+            output_loop_flag = True
+            while(output_loop_flag):
                 # prompt user to choose which files to delete if any
                 user_input = input(
                     "Enter '0' to keep all files. Otherwise, enter the numbers listed next to each file you would like to delete, separated by spaces.\n")
 
-                # if input is correct, exit loop
-                # if type(user_input) == int:
-                if user_input.isdigit():
+                # if input is 0, break from loop
+                if user_input == "0":
                     break
-                # if input is incorrect, loop again to reprompt user for correct input
                 else:
-                    print("Incorrect input")
-                    continue
+                    # clean up input
+                    deletion_list = []
+                    list_input = list(user_input)
+                    # strip spaces from input
+                    delete_selection = [z for z in list_input if z.strip()]
 
-            # # prompt user to choose which files to delete if any
-            # user_input = input(
-            #     "Enter '0' to keep all files. Otherwise, enter the numbers listed next to each file you would like to delete, separated by spaces.\n")
+                    # loop through list and make sure every element is valid input
+                    for selection in delete_selection:
+                        if selection.isdigit() and 1 <= int(selection) <= i:
+                            # need a check for reaching end of list
+                            if selection == delete_selection[-1]:
+                                output_loop_flag = False
+                            continue
+                        else:
+                            print("Incorrect input!")
+                            break
 
             if user_input != "0":
-                deletion_list = []
-                list_input = list(user_input)
-                # strip spaces from input
-                delete_selection = [z for z in list_input if z.strip()]
 
                 # make a new list using output_dupes and deletion list that contains paths
                 #       with the associated delete numbers
