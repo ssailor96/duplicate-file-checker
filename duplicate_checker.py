@@ -6,6 +6,7 @@ import json
 import platform
 import humanize
 import sys
+import logging
 
 # class for modeling file data
 
@@ -26,9 +27,10 @@ class FileData:
 
 
 # file deletion function
-def delete_files(deletion_list):
+def delete_files(deletion_list, logger):
     for file in deletion_list:
         os.remove(file)
+        logger.info(file + " deleted!")
         print(file + " deleted!")
     return
 
@@ -93,7 +95,7 @@ def get_info(path_list, file_list):
 
 
 # comparison function for finding duplicates between hashes
-def dupe_finder(file_list):
+def dupe_finder(file_list, logger):
     dupe_list = []
     # check each object in list exactly once
     for i, x in enumerate(file_list):
@@ -120,6 +122,7 @@ def dupe_finder(file_list):
 
         elif (file.isDuplicate == True) and (file.deleteFlag == None):
             # if the file is a duplicate and the delete flag is set to none prompt user to choose whether or not to delete files
+            logger.info("Duplicate files found")
             print("The following files are duplicates of each other: ")
 
             # make a list of the current file and all its duplicates and print it
@@ -139,6 +142,7 @@ def dupe_finder(file_list):
 
                 # if input is 0, break from loop
                 if user_input == "0":
+                    logger.info("User chose to keep all files")
                     break
                 else:
                     # clean up input
@@ -155,6 +159,7 @@ def dupe_finder(file_list):
                                 output_loop_flag = False
                             continue
                         else:
+                            logger.warning("Invalid input")
                             print("Incorrect input!")
                             break
 
@@ -189,23 +194,21 @@ def dupe_finder(file_list):
                                         f.duplicateOf.remove(g)
 
                 # call deletion function
-                delete_files(deletion_list)
+                delete_files(deletion_list, logger)
 
             # set delete flags to false for all files if the user chooses to keep them
-            elif user_input == "0":
+            else:
                 for a in output_dupes:
                     for b in file_list:
                         if a == b.absPath:
                             b.deleteFlag = False
 
-            else:
-                print("Improper input")
-                sys.exit()
         else:
             continue
 
     # check if dupe_list is empty
     if not dupe_list:
+        logger.info("No duplicate files")
         print("********************* No duplicate files found *********************")
     else:
         print("********************* Remaining duplicate files listed below *********************")
@@ -222,7 +225,7 @@ def dupe_finder(file_list):
 
 
 # function for generating output file
-def output_data(file_list):
+def output_data(file_list, logger):
     current_time = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 
     # create file name with current datetime
@@ -234,14 +237,28 @@ def output_data(file_list):
     # write the json string to json file
     with open(output_file_name, "w") as outfile:
         outfile.write(json_string)
+    logger.info("Hash report file created")
     outfile.close()
 
 
 def main():
+    # create log file
+    logging.basicConfig(filename="std.log",
+                        format='%(asctime)s: %(levelname)s: %(message)s', filemode='w')
+
+    # create logger object and set threshold
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
     # find out which system, release, and version is being used
     print("System: " + str(platform.system()))
     print("Release: " + str(platform.release()))
     print("Version: " + str(platform.version()))
+
+    # log system, release, and platform info
+    logger.info("System: " + str(platform.system()))
+    logger.info("Release: " + str(platform.release()))
+    logger.info("Version: " + str(platform.version()))
 
     file_list = []
     path_list = []
@@ -254,6 +271,7 @@ def main():
             break
         # if input is incorrect, loop again to reprompt user for correct input
         else:
+            logger.warning("Invalid input")
             print("Incorrect input")
             continue
 
@@ -281,6 +299,7 @@ def main():
                 break
             # if input is incorrect, loop again to reprompt user for correct input
             else:
+                logger.warning("Invalid input")
                 print("Incorrect input")
                 continue
 
@@ -288,10 +307,10 @@ def main():
     get_info(path_list, file_list)
 
     # calls dupe_finder to search for duplicate files and save duplicates to a file
-    dupe_finder(file_list)
+    dupe_finder(file_list, logger)
 
     # calls output_data to create json output file
-    output_data(file_list)
+    output_data(file_list, logger)
 
 
 if __name__ == "__main__":
