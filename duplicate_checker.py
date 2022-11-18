@@ -239,16 +239,20 @@ def output_data(file_list, logger):
         outfile.write(json_string)
     logger.info("Hash report file created")
     outfile.close()
+    logger.info("Session end")
 
 
 def main():
+
     # create log file
     logging.basicConfig(filename="std.log",
-                        format='%(asctime)s: %(levelname)s: %(message)s', filemode='w')
+                        format='%(asctime)s: %(levelname)s: %(message)s', filemode='a+')
 
     # create logger object and set threshold
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
+
+    logger.info("Session start")
 
     # find out which system, release, and version is being used
     print("System: " + str(platform.system()))
