@@ -29,6 +29,7 @@ class FileData:
 # file deletion function
 def delete_files(deletion_list, logger):
     for file in deletion_list:
+        # delete all files in deletion_list and log their deletion
         os.remove(file)
         logger.info(file + " deleted!")
         print(file + " deleted!")
@@ -160,48 +161,48 @@ def dupe_finder(file_list, logger):
                             continue
                         else:
                             logger.warning("Invalid input")
-                            print("Incorrect input!")
+                            print("Invalid input")
                             break
 
             if user_input != "0":
 
                 # make a new list using output_dupes and deletion list that contains paths
                 #       with the associated delete numbers
-                for j in delete_selection:
-                    deletion_list.append(output_dupes[int(j)-1])
+                for file in delete_selection:
+                    deletion_list.append(output_dupes[int(file)-1])
 
                 # list of duplicates that won't be deleted
                 flag_list = [x for x in output_dupes if x not in deletion_list]
 
-                for f in file_list:
+                for file in file_list:
                     # if there is only one remaining in the set of duplicates, change its duplicate flag to false
-                    if len(flag_list) == 1 and f.absPath == flag_list[0]:
-                        f.isDuplicate = False
+                    if len(flag_list) == 1 and file.absPath == flag_list[0]:
+                        file.isDuplicate = False
                     # set the delete flag to false for any duplicates that won't be deleted
-                    for g in flag_list:
-                        if f.absPath == g:
-                            f.deleteFlag = False
+                    for flagged_file in flag_list:
+                        if file.absPath == flagged_file:
+                            file.deleteFlag = False
 
                 # set the delete flag to true for any file the user chooses to delete
-                for a in deletion_list:
-                    for b in file_list:
-                        if a == b.absPath:
-                            b.deleteFlag = True
+                for file_to_delete in deletion_list:
+                    for file in file_list:
+                        if file_to_delete == file.absPath:
+                            file.deleteFlag = True
                             # loop through all duplicateOf lists and remove any duplicates that will be deleted
                             for f in file_list:
-                                for g in f.duplicateOf:
-                                    if g == b.absPath:
-                                        f.duplicateOf.remove(g)
+                                for dupe in f.duplicateOf:
+                                    if dupe == file.absPath:
+                                        f.duplicateOf.remove(dupe)
 
                 # call deletion function
                 delete_files(deletion_list, logger)
 
             # set delete flags to false for all files if the user chooses to keep them
             else:
-                for a in output_dupes:
-                    for b in file_list:
-                        if a == b.absPath:
-                            b.deleteFlag = False
+                for file_to_keep in output_dupes:
+                    for file in file_list:
+                        if file_to_keep == file.absPath:
+                            file.deleteFlag = False
 
         else:
             continue
@@ -214,10 +215,10 @@ def dupe_finder(file_list, logger):
         print("********************* Remaining duplicate files listed below *********************")
         # print all remaining duplicates to console along with the number of duplicates
         num_duplicates = 0
-        for x in file_list:
-            if x.isDuplicate == True and x.deleteFlag == False:
+        for file in file_list:
+            if file.isDuplicate == True and file.deleteFlag == False:
                 num_duplicates = num_duplicates + 1
-                print(x.absPath)
+                print(file.absPath)
         print("Number of duplicate files remaining: " + str(num_duplicates))
         print("********************* See hash report file for more information *********************")
 
@@ -233,7 +234,7 @@ def output_data(file_list, logger):
 
     # convert objects to json string
     json_string = json.dumps(
-        [x.__dict__ for x in file_list if x.deleteFlag == False], indent=4)
+        [file.__dict__ for file in file_list if file.deleteFlag == False], indent=4)
     # write the json string to json file
     with open(output_file_name, "w") as outfile:
         outfile.write(json_string)
@@ -273,10 +274,10 @@ def main():
         # if input is correct, exit loop
         if os.path.isfile(user_input) or os.path.isdir(user_input):
             break
-        # if input is incorrect, loop again to reprompt user for correct input
+        # if input is invalid, loop again to reprompt user for correct input
         else:
             logger.warning("Invalid input")
-            print("Incorrect input")
+            print("Invalid input")
             continue
 
     if os.path.isdir(user_input):
@@ -301,10 +302,10 @@ def main():
             if os.path.isfile(user_input2):
                 path_list.append(user_input2)
                 break
-            # if input is incorrect, loop again to reprompt user for correct input
+            # if input is invalid, loop again to reprompt user for correct input
             else:
                 logger.warning("Invalid input")
-                print("Incorrect input")
+                print("Invalid input")
                 continue
 
     # calls get_info to get metadata for files and use that information to create model objects

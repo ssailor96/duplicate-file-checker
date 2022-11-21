@@ -1,6 +1,6 @@
 # Duplicate File Checker
 
-This application checks for duplicate files. It can compare two provided files or compare all files in a provided directory. The program creates a json file listing metadata and hashes for each file and states whether or not those files are duplicates. It also deletes any duplicate files the user chooses.
+This application checks for duplicate files. It can compare two provided files or compare all files in a provided directory. The program generates a log file as well as a json file listing metadata and hashes for each file and states whether or not those files are duplicates. It also deletes any duplicate files the user chooses.
 
 ## Getting Started
 ### Prerequisites
@@ -62,14 +62,29 @@ The metadata, hashes, and list of duplicates for each duplicate file are saved t
 ```
 Deleted files will not have their information recorded.
 
+## Log File
+
+The program generates a log file with two types of messages: INFO and WARNING. If a log file already exists, it will be appended to instead. 
+
+INFO messages are for:
+- Stating the start or stop of a session
+- System/release/version information
+- Whether or not duplicates are found
+- Whether or not duplicates are kept
+- Which files are deleted
+- Hash report creation
+
+WARNING messages are only used for invalid user input.
+
 
 ## Outputs
 
 - hash_report-*currentdatetime*.json
+- std.log
 
 ## Notes
 
-- Make sure to use correct input (a path to a file or directory). If incorrect input is used, the program will exit and need to be run again.
+- Make sure to use correct input (a path to a file or directory). If incorrect input is used, the program will print "Invalid input" to the console and reprompt the user for input.
 - The path provided must be an absolute path.
 
 ## License
