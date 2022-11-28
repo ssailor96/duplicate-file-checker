@@ -12,9 +12,10 @@ import logging
 
 
 class FileData:
-    def __init__(self, abs_path, sha256_hash, file_size, mod_time, create_time, is_duplicate, duplicate_of, delete_flag):
+    def __init__(self, abs_path, hash_algorithm, file_hash, file_size, mod_time, create_time, is_duplicate, duplicate_of, delete_flag):
         self.absPath = abs_path
-        self.sha256Hash = sha256_hash
+        self.hashAlgorithm = hash_algorithm
+        self.file_hash = file_hash
         self.fileSize = file_size
         self.modTime = mod_time
         self.createTime = create_time
@@ -23,7 +24,7 @@ class FileData:
         self.deleteFlag = delete_flag
 
     def __repr__(self):
-        return f'Absolute path: {self.absPath} \nFile hash: {self.sha256Hash} \nFile size: {self.fileSize} \nFile modified at: {self.modTime} \nFile created at: {self.createTime} \nDuplicate file: {self.isDuplicate} \nDuplicate of: {self.duplicateOf} \nDelete flag: {self.deleteFlag}'
+        return f'Absolute path: {self.absPath} \nHash algorithm: {self.hash_algorithm} \nFile hash: {self.file_hash} \nFile size: {self.fileSize} \nFile modified at: {self.modTime} \nFile created at: {self.createTime} \nDuplicate file: {self.isDuplicate} \nDuplicate of: {self.duplicateOf} \nDelete flag: {self.deleteFlag}'
 
 
 # file deletion function
@@ -39,12 +40,10 @@ def delete_files(deletion_list, logger):
 # hashing function
 
 
-def hashing(path_to_file):
+def hashing(path_to_file, algorithm_choice):
 
     # buffer size variable
     BUF_SIZE = 66536
-    # initialize  sha method
-    sha256 = hashlib.sha256()
 
     # open the file with the given file path
     with open(path_to_file, 'rb') as file:
@@ -55,11 +54,30 @@ def hashing(path_to_file):
             if not file_contents:
                 break
 
-            # pass the file contents to the hash function, outputs hash object
-            sha256.update(file_contents)
+            if algorithm_choice == "sha256":
+                # initialize sha method
+                sha256 = hashlib.sha256()
+                # pass the file contents to the hash function, outputs hash object
+                sha256.update(file_contents)
+                # convert the hash to a string in hexidecimal format
+                hash_string = sha256.hexdigest()
+            elif algorithm_choice == "md5":
+                # initialize md5 method
+                md5 = hashlib.md5()
+                # pass the file contents to the hash function, outputs hash object
+                md5.update(file_contents)
+                # convert the hash to a string in hexidecimal format
+                hash_string = md5.hexdigest()
+            # use blake2b
+            else:
+                # initialize blake2s method
+                blake2s = hashlib.blake2s()
+                # pass the file contents to the hash function, outputs hash object
+                blake2s.update(file_contents)
+                # convert the hash to a string in hexidecimal format
+                hash_string = blake2s.hexdigest()
 
-    # return hash as a string in hexidecimal format
-    return sha256.hexdigest()
+    return hash_string
 
 # function for getting metadata for files and instantiating the objects
 
@@ -69,8 +87,14 @@ def get_info(path_list, file_list):
 
     for file_path in path_list:
 
+        # TEMPORARY HARDCODED ALGORITHM CHOICE
+        algorithm_choice = "sha256"
+
+        # save algorithm choice to variable for when object is instantiated
+        hash_algorithm = algorithm_choice
+
         # call hashing function on each file
-        sha256_hash = hashing(file_path)
+        file_hash = hashing(file_path, algorithm_choice)
 
         # get metadata
         # get file size and make it human readable
@@ -87,7 +111,7 @@ def get_info(path_list, file_list):
         duplicate_of = []
         delete_flag = None
         # instantiate model object and add data
-        fd = FileData(file_path, sha256_hash, file_size, mod_time,
+        fd = FileData(file_path, hash_algorithm, file_hash, file_size, mod_time,
                       create_time, is_duplicate, duplicate_of, delete_flag)
 
         # append the object to the list
@@ -101,7 +125,7 @@ def dupe_finder(file_list, logger):
     # check each object in list exactly once
     for i, x in enumerate(file_list):
         for y in file_list[i + 1:]:
-            if x.sha256Hash == y.sha256Hash:
+            if x.file_hash == y.file_hash:
 
                 # update duplicate info
                 x.isDuplicate = True
