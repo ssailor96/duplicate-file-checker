@@ -40,7 +40,7 @@ def delete_files(deletion_list, logger):
 # hashing function
 
 
-def hashing(path_to_file, algorithm_choice):
+def hashing(path_to_file, hash_algorithm):
 
     # buffer size variable
     BUF_SIZE = 66536
@@ -54,14 +54,14 @@ def hashing(path_to_file, algorithm_choice):
             if not file_contents:
                 break
 
-            if algorithm_choice == "sha256":
+            if hash_algorithm == "sha256":
                 # initialize sha method
                 sha256 = hashlib.sha256()
                 # pass the file contents to the hash function, outputs hash object
                 sha256.update(file_contents)
                 # convert the hash to a string in hexidecimal format
                 hash_string = sha256.hexdigest()
-            elif algorithm_choice == "md5":
+            elif hash_algorithm == "md5":
                 # initialize md5 method
                 md5 = hashlib.md5()
                 # pass the file contents to the hash function, outputs hash object
@@ -70,31 +70,25 @@ def hashing(path_to_file, algorithm_choice):
                 hash_string = md5.hexdigest()
             # use blake2b
             else:
-                # initialize blake2s method
-                blake2s = hashlib.blake2s()
+                # initialize blake2b method
+                blake2b = hashlib.blake2b()
                 # pass the file contents to the hash function, outputs hash object
-                blake2s.update(file_contents)
+                blake2b.update(file_contents)
                 # convert the hash to a string in hexidecimal format
-                hash_string = blake2s.hexdigest()
+                hash_string = blake2b.hexdigest()
 
     return hash_string
 
 # function for getting metadata for files and instantiating the objects
 
 
-def get_info(path_list, file_list):
+def get_info(path_list, file_list, hash_algorithm):
     # get file info here given a list of paths
 
     for file_path in path_list:
 
-        # TEMPORARY HARDCODED ALGORITHM CHOICE
-        algorithm_choice = "sha256"
-
-        # save algorithm choice to variable for when object is instantiated
-        hash_algorithm = algorithm_choice
-
         # call hashing function on each file
-        file_hash = hashing(file_path, algorithm_choice)
+        file_hash = hashing(file_path, hash_algorithm)
 
         # get metadata
         # get file size and make it human readable
@@ -250,11 +244,12 @@ def dupe_finder(file_list, logger):
 
 
 # function for generating output file
-def output_data(file_list, logger):
+def output_data(file_list, logger, output_file_location):
     current_time = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 
+    output_file_path = output_file_location + "/hash_report-"
     # create file name with current datetime
-    output_file_name = "hash_report-" + current_time + ".json"
+    output_file_name = output_file_path + current_time + ".json"
 
     # convert objects to json string
     json_string = json.dumps(
@@ -268,11 +263,67 @@ def output_data(file_list, logger):
 
 
 def main():
+    chosen_settings = {}
+    # default_settings: output location (for reports), hash algorithm, log file location
+    default_settings = {
+        "output location": str(os.getcwd()),
+        "hash algorithm": "sha256",
+        "log file location": str(os.getcwd()) + "/std.log"}
 
-    # create log file
-    logging.basicConfig(filename="std.log",
-                        format='%(asctime)s: %(levelname)s: %(message)s', filemode='a+')
+    hash_algorithms = ["sha256", "md5", "blake2b"]
 
+    # create variable for path of config file in current directory
+    config_path = str(os.getcwd()) + "/config.json"
+    # check for config file in current directory
+    if os.path.exists(config_path):
+        # if config file exists, open it and convert the contents to a dictionary
+        with open('config.json') as json_file:
+            data = json.load(json_file)
+        print(data)
+
+        # convert log file path from config file to string
+        log_file_path = str(data["log file location"])
+
+        # check if log file location in config file is a file
+        if os.path.isfile(log_file_path):
+            print("Log file exists")
+            # set log file location setting to the path user chose
+            chosen_settings["log file location"] = log_file_path
+        else:
+            print("Log file not found. Using default log file location.")
+            # set log file location as default
+            chosen_settings["log file location"] = default_settings["log file location"]
+
+        # check if output directory is valid
+        output_path = str(data["output location"])
+        if os.path.isdir(output_path):
+            print("Output directory exists")
+            # if valid, add chosen directory to settings
+            chosen_settings["output location"] = output_path
+        else:
+            print("Output directory not found. Using default directory.")
+            # set output directory as default
+            chosen_settings["output location"] = default_settings["output location"]
+
+        # check if hash algorithm choice is valid
+        chosen_hash = str(data["hash algorithm"])
+        # if the user's choice is one of the program's algorithms, add it to settings
+        if chosen_hash in hash_algorithms:
+            print("Chosen hash is valid")
+            chosen_settings["hash algorithm"] = chosen_hash
+        # if the chosen hash is not a valid choice, use default setting
+        else:
+            print("Chosen hash not valid. Using default hashing algorithm sha256.")
+            chosen_settings["hash algorithm"] = default_settings["hash algorithm"]
+
+    # if there is no config file, use default settings
+    else:
+        chosen_settings = default_settings
+        print("Using default settings")
+
+    # create log file with chosen setting location
+    logging.basicConfig(
+        filename=(chosen_settings["log file location"]), format='%(asctime)s: %(levelname)s: %(message)s', filemode='a+')
     # create logger object and set threshold
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
@@ -332,14 +383,22 @@ def main():
                 print("Invalid input")
                 continue
 
+    hash_algorithm = chosen_settings["hash algorithm"]
+
     # calls get_info to get metadata for files and use that information to create model objects
-    get_info(path_list, file_list)
+    get_info(path_list, file_list, hash_algorithm)
 
     # calls dupe_finder to search for duplicate files and save duplicates to a file
     dupe_finder(file_list, logger)
 
+    output_file_location = chosen_settings["output location"]
     # calls output_data to create json output file
-    output_data(file_list, logger)
+    output_data(file_list, logger, output_file_location)
+
+    print("Log file can be found at: " +
+          str(chosen_settings["log file location"]))
+    print("Hash report can be found at: " +
+          str(chosen_settings["output location"]))
 
 
 if __name__ == "__main__":
