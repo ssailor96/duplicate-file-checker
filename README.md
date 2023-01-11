@@ -18,7 +18,19 @@ This application checks for duplicate files. It can compare two provided files o
 
 ## Using the Application
 
-When the program is run, it outputs the system, release, and version of the platform being used to the console. It then prompts the user to provide either the path to a file or a path to a directory. If a path to a file is provided, the program prompts the user to provide the path to a second file. If a directory is provided, the application will examine all files not only in the directory itself but also in all its subfolders.
+Before the program is run, the user may add a config.json file to the directory the application files are in. This file may be used to set a desired location for output files, choose a hash algorithm, and set the path for an existing log file the user wants the program to write to. If no config file is provided or if any of the settings are invalid, default settings will be used. Hash algorithm choices include SHA256, MD5, and BLAKE2b. The default hash algorithm is SHA256, and the default location for output files and the log file is the directory that contains the application files. This is an example config file:
+
+```
+{
+    "output location": "/Users/bobsmith/folder",
+    "hash algorithm": "blake2b",
+    "log file location": "/Users/bobsmith/folder2/std.log"
+}
+```
+
+As soon as the program starts, it creates an array for storing logging information since the log file is not yet created. It configures settings as chosen by the user or sets them to defaults. Once settings are established, the log file is created and previously logged information is added to it. The program now starts logging in real time.
+
+It then prompts the user to provide either the path to a file or a path to a directory. If a path to a file is provided, the program prompts the user to provide the path to a second file. If a directory is provided, the application will examine all files not only in the directory itself but also in all its subfolders.
 
 To check if two files are the same, enter a path to a file. To check for duplicates in an entire directory, enter a path to a directory. The application takes all files provided and gets their metadata as well as their hashes. It checks for duplicates by comparing the hashes of each file. 
 
@@ -77,6 +89,12 @@ INFO messages are for:
 WARNING messages are only used for invalid user input.
 
 
+## Inputs
+
+- config.json (optional)
+- std.log (optional)
+
+
 ## Outputs
 
 - hash_report-*currentdatetime*.json
@@ -86,6 +104,7 @@ WARNING messages are only used for invalid user input.
 
 - Make sure to use correct input (a path to a file or directory). If incorrect input is used, the program will print "Invalid input" to the console and reprompt the user for input.
 - The path provided must be an absolute path.
+- Because all logging done prior to the creation of the log file must be dumped into the log file all at once, those logs will all have the same time stamp.
 
 ## License
 

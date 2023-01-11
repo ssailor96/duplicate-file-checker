@@ -173,7 +173,7 @@ def dupe_finder(file_list, logger):
                     # loop through list and make sure every element is valid input
                     for selection in delete_selection:
                         if selection.isdigit() and 1 <= int(selection) <= i:
-                            # need a check for reaching end of list
+                            # check for end of list
                             if selection == delete_selection[-1]:
                                 output_loop_flag = False
                             continue
@@ -263,6 +263,16 @@ def output_data(file_list, logger, output_file_location):
 
 
 def main():
+
+    # create array for logging data before log file is created
+    log_array = []
+    log_array.append("Session start")
+
+    # log system, release, and platform info
+    log_array.append("System: " + str(platform.system()))
+    log_array.append("Release: " + str(platform.release()))
+    log_array.append("Version: " + str(platform.version()))
+
     chosen_settings = {}
     # default_settings: output location (for reports), hash algorithm, log file location
     default_settings = {
@@ -276,32 +286,35 @@ def main():
     config_path = str(os.getcwd()) + "/config.json"
     # check for config file in current directory
     if os.path.exists(config_path):
+        log_array.append("Using config file")
         # if config file exists, open it and convert the contents to a dictionary
         with open('config.json') as json_file:
             data = json.load(json_file)
-        print(data)
+        # print("Config file found. Using config file settings.")
 
         # convert log file path from config file to string
         log_file_path = str(data["log file location"])
 
         # check if log file location in config file is a file
         if os.path.isfile(log_file_path):
-            print("Log file exists")
+            log_array.append("Using log file provided by user")
             # set log file location setting to the path user chose
             chosen_settings["log file location"] = log_file_path
         else:
-            print("Log file not found. Using default log file location.")
+            log_array.append(
+                "Log file not found. Using default log file location.")
             # set log file location as default
             chosen_settings["log file location"] = default_settings["log file location"]
 
         # check if output directory is valid
         output_path = str(data["output location"])
         if os.path.isdir(output_path):
-            print("Output directory exists")
+            log_array.append("Using output directory requested by user")
             # if valid, add chosen directory to settings
             chosen_settings["output location"] = output_path
         else:
-            print("Output directory not found. Using default directory.")
+            log_array.append(
+                "Output directory not found. Using default output directory.")
             # set output directory as default
             chosen_settings["output location"] = default_settings["output location"]
 
@@ -309,17 +322,19 @@ def main():
         chosen_hash = str(data["hash algorithm"])
         # if the user's choice is one of the program's algorithms, add it to settings
         if chosen_hash in hash_algorithms:
-            print("Chosen hash is valid")
+            log_array.append("Using hash algorithm requested by user")
             chosen_settings["hash algorithm"] = chosen_hash
         # if the chosen hash is not a valid choice, use default setting
         else:
-            print("Chosen hash not valid. Using default hashing algorithm sha256.")
+            log_array.append(
+                "Hash algorithm requested by user not valid. Using default hash algorithm SHA256.")
             chosen_settings["hash algorithm"] = default_settings["hash algorithm"]
 
     # if there is no config file, use default settings
     else:
+        log_array.append("Config file not found. Using default settings.")
         chosen_settings = default_settings
-        print("Using default settings")
+        print("No config file found. Using default settings.")
 
     # create log file with chosen setting location
     logging.basicConfig(
@@ -328,17 +343,10 @@ def main():
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    logger.info("Session start")
-
-    # find out which system, release, and version is being used
-    print("System: " + str(platform.system()))
-    print("Release: " + str(platform.release()))
-    print("Version: " + str(platform.version()))
-
-    # log system, release, and platform info
-    logger.info("System: " + str(platform.system()))
-    logger.info("Release: " + str(platform.release()))
-    logger.info("Version: " + str(platform.version()))
+    # LOOP THROUGH ARRAY OF LOGS AND DUMP INTO LOG FILE
+    for log in log_array:
+        logger.info(log)
+    logger.info("Switching to full logging")
 
     file_list = []
     path_list = []
