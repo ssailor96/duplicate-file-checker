@@ -12,9 +12,10 @@ import logging
 
 
 class FileData:
-    def __init__(self, abs_path, sha256_hash, file_size, mod_time, create_time, is_duplicate, duplicate_of, delete_flag):
+    def __init__(self, abs_path, hash_algorithm, file_hash, file_size, mod_time, create_time, is_duplicate, duplicate_of, delete_flag):
         self.absPath = abs_path
-        self.sha256Hash = sha256_hash
+        self.hashAlgorithm = hash_algorithm
+        self.file_hash = file_hash
         self.fileSize = file_size
         self.modTime = mod_time
         self.createTime = create_time
@@ -23,7 +24,7 @@ class FileData:
         self.deleteFlag = delete_flag
 
     def __repr__(self):
-        return f'Absolute path: {self.absPath} \nFile hash: {self.sha256Hash} \nFile size: {self.fileSize} \nFile modified at: {self.modTime} \nFile created at: {self.createTime} \nDuplicate file: {self.isDuplicate} \nDuplicate of: {self.duplicateOf} \nDelete flag: {self.deleteFlag}'
+        return f'Absolute path: {self.absPath} \nHash algorithm: {self.hash_algorithm} \nFile hash: {self.file_hash} \nFile size: {self.fileSize} \nFile modified at: {self.modTime} \nFile created at: {self.createTime} \nDuplicate file: {self.isDuplicate} \nDuplicate of: {self.duplicateOf} \nDelete flag: {self.deleteFlag}'
 
 
 # file deletion function
@@ -39,12 +40,10 @@ def delete_files(deletion_list, logger):
 # hashing function
 
 
-def hashing(path_to_file):
+def hashing(path_to_file, hash_algorithm):
 
     # buffer size variable
     BUF_SIZE = 66536
-    # initialize  sha method
-    sha256 = hashlib.sha256()
 
     # open the file with the given file path
     with open(path_to_file, 'rb') as file:
@@ -55,22 +54,41 @@ def hashing(path_to_file):
             if not file_contents:
                 break
 
-            # pass the file contents to the hash function, outputs hash object
-            sha256.update(file_contents)
+            if hash_algorithm == "sha256":
+                # initialize sha method
+                sha256 = hashlib.sha256()
+                # pass the file contents to the hash function, outputs hash object
+                sha256.update(file_contents)
+                # convert the hash to a string in hexidecimal format
+                hash_string = sha256.hexdigest()
+            elif hash_algorithm == "md5":
+                # initialize md5 method
+                md5 = hashlib.md5()
+                # pass the file contents to the hash function, outputs hash object
+                md5.update(file_contents)
+                # convert the hash to a string in hexidecimal format
+                hash_string = md5.hexdigest()
+            # use blake2b
+            else:
+                # initialize blake2b method
+                blake2b = hashlib.blake2b()
+                # pass the file contents to the hash function, outputs hash object
+                blake2b.update(file_contents)
+                # convert the hash to a string in hexidecimal format
+                hash_string = blake2b.hexdigest()
 
-    # return hash as a string in hexidecimal format
-    return sha256.hexdigest()
+    return hash_string
 
 # function for getting metadata for files and instantiating the objects
 
 
-def get_info(path_list, file_list):
+def get_info(path_list, file_list, hash_algorithm):
     # get file info here given a list of paths
 
     for file_path in path_list:
 
         # call hashing function on each file
-        sha256_hash = hashing(file_path)
+        file_hash = hashing(file_path, hash_algorithm)
 
         # get metadata
         # get file size and make it human readable
@@ -87,7 +105,7 @@ def get_info(path_list, file_list):
         duplicate_of = []
         delete_flag = None
         # instantiate model object and add data
-        fd = FileData(file_path, sha256_hash, file_size, mod_time,
+        fd = FileData(file_path, hash_algorithm, file_hash, file_size, mod_time,
                       create_time, is_duplicate, duplicate_of, delete_flag)
 
         # append the object to the list
@@ -101,7 +119,7 @@ def dupe_finder(file_list, logger):
     # check each object in list exactly once
     for i, x in enumerate(file_list):
         for y in file_list[i + 1:]:
-            if x.sha256Hash == y.sha256Hash:
+            if x.file_hash == y.file_hash:
 
                 # update duplicate info
                 x.isDuplicate = True
@@ -155,7 +173,7 @@ def dupe_finder(file_list, logger):
                     # loop through list and make sure every element is valid input
                     for selection in delete_selection:
                         if selection.isdigit() and 1 <= int(selection) <= i:
-                            # need a check for reaching end of list
+                            # check for end of list
                             if selection == delete_selection[-1]:
                                 output_loop_flag = False
                             continue
@@ -226,11 +244,12 @@ def dupe_finder(file_list, logger):
 
 
 # function for generating output file
-def output_data(file_list, logger):
+def output_data(file_list, logger, output_file_location):
     current_time = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 
+    output_file_path = output_file_location + "/hash_report-"
     # create file name with current datetime
-    output_file_name = "hash_report-" + current_time + ".json"
+    output_file_name = output_file_path + current_time + ".json"
 
     # convert objects to json string
     json_string = json.dumps(
@@ -245,25 +264,89 @@ def output_data(file_list, logger):
 
 def main():
 
-    # create log file
-    logging.basicConfig(filename="std.log",
-                        format='%(asctime)s: %(levelname)s: %(message)s', filemode='a+')
+    # create array for logging data before log file is created
+    log_array = []
+    log_array.append("Session start")
 
+    # log system, release, and platform info
+    log_array.append("System: " + str(platform.system()))
+    log_array.append("Release: " + str(platform.release()))
+    log_array.append("Version: " + str(platform.version()))
+
+    chosen_settings = {}
+    # default_settings: output location (for reports), hash algorithm, log file location
+    default_settings = {
+        "output location": str(os.getcwd()),
+        "hash algorithm": "sha256",
+        "log file location": str(os.getcwd()) + "/std.log"}
+
+    hash_algorithms = ["sha256", "md5", "blake2b"]
+
+    # create variable for path of config file in current directory
+    config_path = str(os.getcwd()) + "/config.json"
+    # check for config file in current directory
+    if os.path.exists(config_path):
+        log_array.append("Using config file")
+        # if config file exists, open it and convert the contents to a dictionary
+        with open('config.json') as json_file:
+            data = json.load(json_file)
+        # print("Config file found. Using config file settings.")
+
+        # convert log file path from config file to string
+        log_file_path = str(data["log file location"])
+
+        # check if log file location in config file is a file
+        if os.path.isfile(log_file_path):
+            log_array.append("Using log file provided by user")
+            # set log file location setting to the path user chose
+            chosen_settings["log file location"] = log_file_path
+        else:
+            log_array.append(
+                "Log file not found. Using default log file location.")
+            # set log file location as default
+            chosen_settings["log file location"] = default_settings["log file location"]
+
+        # check if output directory is valid
+        output_path = str(data["output location"])
+        if os.path.isdir(output_path):
+            log_array.append("Using output directory requested by user")
+            # if valid, add chosen directory to settings
+            chosen_settings["output location"] = output_path
+        else:
+            log_array.append(
+                "Output directory not found. Using default output directory.")
+            # set output directory as default
+            chosen_settings["output location"] = default_settings["output location"]
+
+        # check if hash algorithm choice is valid
+        chosen_hash = str(data["hash algorithm"])
+        # if the user's choice is one of the program's algorithms, add it to settings
+        if chosen_hash in hash_algorithms:
+            log_array.append("Using hash algorithm requested by user")
+            chosen_settings["hash algorithm"] = chosen_hash
+        # if the chosen hash is not a valid choice, use default setting
+        else:
+            log_array.append(
+                "Hash algorithm requested by user not valid. Using default hash algorithm SHA256.")
+            chosen_settings["hash algorithm"] = default_settings["hash algorithm"]
+
+    # if there is no config file, use default settings
+    else:
+        log_array.append("Config file not found. Using default settings.")
+        chosen_settings = default_settings
+        print("No config file found. Using default settings.")
+
+    # create log file with chosen setting location
+    logging.basicConfig(
+        filename=(chosen_settings["log file location"]), format='%(asctime)s: %(levelname)s: %(message)s', filemode='a+')
     # create logger object and set threshold
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    logger.info("Session start")
-
-    # find out which system, release, and version is being used
-    print("System: " + str(platform.system()))
-    print("Release: " + str(platform.release()))
-    print("Version: " + str(platform.version()))
-
-    # log system, release, and platform info
-    logger.info("System: " + str(platform.system()))
-    logger.info("Release: " + str(platform.release()))
-    logger.info("Version: " + str(platform.version()))
+    # LOOP THROUGH ARRAY OF LOGS AND DUMP INTO LOG FILE
+    for log in log_array:
+        logger.info(log)
+    logger.info("Switching to full logging")
 
     file_list = []
     path_list = []
@@ -308,14 +391,22 @@ def main():
                 print("Invalid input")
                 continue
 
+    hash_algorithm = chosen_settings["hash algorithm"]
+
     # calls get_info to get metadata for files and use that information to create model objects
-    get_info(path_list, file_list)
+    get_info(path_list, file_list, hash_algorithm)
 
     # calls dupe_finder to search for duplicate files and save duplicates to a file
     dupe_finder(file_list, logger)
 
+    output_file_location = chosen_settings["output location"]
     # calls output_data to create json output file
-    output_data(file_list, logger)
+    output_data(file_list, logger, output_file_location)
+
+    print("Log file can be found at: " +
+          str(chosen_settings["log file location"]))
+    print("Hash report can be found at: " +
+          str(chosen_settings["output location"]))
 
 
 if __name__ == "__main__":
