@@ -77,7 +77,7 @@ def hashing(path_to_file, hash_algorithm):
                 # convert the hash to a string in hexidecimal format
                 hash_string = blake2b.hexdigest()
 
-    return hash_string
+            return hash_string
 
 # function for getting metadata for files and instantiating the objects
 
@@ -172,7 +172,8 @@ def dupe_finder(file_list, logger):
 
                     # loop through list and make sure every element is valid input
                     for selection in delete_selection:
-                        if selection.isdigit() and 1 <= int(selection) <= i:
+                        # if selection.isdigit() and 1 <= int(selection) <= i:
+                        if selection.isdigit() and 1 <= int(selection) < i:
                             # check for end of list
                             if selection == delete_selection[-1]:
                                 output_loop_flag = False
@@ -240,7 +241,7 @@ def dupe_finder(file_list, logger):
         print("Number of duplicate files remaining: " + str(num_duplicates))
         print("********************* See hash report file for more information *********************")
 
-    return dupe_list
+        return dupe_list
 
 
 # function for generating output file
